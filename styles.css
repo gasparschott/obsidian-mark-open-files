@@ -1,0 +1,4 @@
+.highlight_open_file::before 
+{
+	content:'\2022\2004'
+}
