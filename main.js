@@ -27,7 +27,7 @@ class HighlightOpenFiles extends obsidian.Plugin {
 					file_explorer_file_items[value].innerEl.classList.remove('highlight_open_file');
 				}
 			}
-		},1000);
+		},0);
 		workspace.onLayoutReady( async () => { sleep(0).then( () => { highlight_open_files(); }); });																// initialize
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', () => {
