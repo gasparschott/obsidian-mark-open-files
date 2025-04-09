@@ -1,19 +1,16 @@
-.highlight_open_file::before 
-{
-	content:'\2022\2004'
-}
-.marker_container
+.mark_open_files_container
 {
 	display:inline-block;
 	whitespace:pre;
 }
-.marker
+.mark_open_files
 {
 	margin-right:2px;
 	padding:0 2px;
 	opacity:66%;
 }
-.marker:hover
+.mark_open_files:hover
 {
 	opacity:100%;
+	color:var(--icon-color-hover)
 }
