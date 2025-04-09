@@ -2,3 +2,18 @@
 {
 	content:'\2022\2004'
 }
+.marker_container
+{
+	display:inline-block;
+	whitespace:pre;
+}
+.marker
+{
+	margin-right:2px;
+	padding:0 2px;
+	opacity:66%;
+}
+.marker:hover
+{
+	opacity:100%;
+}
