@@ -8,4 +8,4 @@ This is a ~~simple~~ slightly-more-than-simple plugin for Obsidian that adds a m
 
 <img src="assets/mark-open-files.gif" style="width:672px;" alt="Basic usage example" />
 
-Note: This screenshot includes some behavior handled by my "Continuous Mode" plugin.
+Note: This screenshot includes some behavior handled by my "[Continuous Mode](https://github.com/gasparschott/obsidian-continuous-mode/)" plugin (q.v.).
