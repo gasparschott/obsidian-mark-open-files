@@ -6,4 +6,6 @@ This is a ~~simple~~ slightly-more-than-simple plugin for Obsidian that adds a m
 
 • Clicking a marker will make the corresponding leaf active.  
 
-<img src="assets/highlight-open-files.gif" style="width:672px;" alt="Basic usage example" />
+<img src="assets/mark-open-files.gif" style="width:672px;" alt="Basic usage example" />
+
+Note: This screenshot includes some behavior handled by my "Continuous Mode" plugin.
