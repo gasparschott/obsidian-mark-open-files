@@ -33,7 +33,7 @@ class HighlightOpenFiles extends obsidian.Plugin {
 				let open_items = getOpenItems(), open_leaves = open_items[0], open_leaves_ids = open_items[1], open_leaves_paths = open_items[2];
 				let getMarkers = () => { return file_explorer_tree.containerEl.querySelectorAll('.mark_open_files') };
 				open_leaves.forEach( open_leaf => {
-					let tree_item = file_explorer_tree.containerEl.querySelector('.tree-item-self[data-path="'+open_leaf?.view?.file?.path+'"]') || null;	// find tree item by leaf file path
+					let tree_item = file_explorer_tree?.containerEl?.querySelector('.tree-item-self[data-path="'+open_leaf?.view?.file?.path+'"]') || null;	// find tree item by leaf file path
 					if ( tree_item !== null && !tree_item.querySelector('.mark_open_files[data-leaf_id="'+open_leaf.id+'"]') ) {
 						addMarker(tree_item.querySelector('.tree-item-inner'),open_leaf.id );												// if no matching leaf marker, add leaf marker
 					}
@@ -48,13 +48,12 @@ class HighlightOpenFiles extends obsidian.Plugin {
 		},100);
 		workspace.onLayoutReady( () => { sleep(100).then( () => { highlight_open_files(); }); });												// initialize
 		this.registerDomEvent(document,'mousedown', (e) => {
-			if ( e.target.classList.contains('mark_open_files') ) {
+			if ( /mark_open_files/.test(e.target.className) ) {
 				e.stopPropagation(); e.stopImmediatePropagation; e.preventDefault();
 				e.target.addEventListener('click', function(e) { 
 					e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
 					workspace.setActiveLeaf(workspace.getLeafById(e.srcElement.dataset.leaf_id),{focus:true});
 					workspace.getLeafById(e.srcElement.dataset.leaf_id).tabHeaderEl.click();												// trigger Continuous Mode plugin scroll into view
-				console.log(e)
 				});
 			}
 		});
