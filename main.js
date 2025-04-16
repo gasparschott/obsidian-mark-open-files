@@ -35,7 +35,7 @@ class HighlightOpenFiles extends obsidian.Plugin {
 				open_leaves.forEach( open_leaf => {
 					let tree_item = file_explorer_tree?.containerEl?.querySelector('.tree-item-self[data-path="'+open_leaf?.view?.file?.path+'"]') || null;	// find tree item by leaf file path
 					if ( tree_item !== null && !tree_item.querySelector('.mark_open_files[data-leaf_id="'+open_leaf.id+'"]') ) {
-						addMarker(tree_item.querySelector('.tree-item-inner'),open_leaf.id );												// if no matching leaf marker, add leaf marker
+						addMarker(tree_item,open_leaf.id );												// if no matching leaf marker, add leaf marker
 					}
 				});
 				getMarkers().forEach( marker => {
