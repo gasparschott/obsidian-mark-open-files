@@ -10,12 +10,16 @@ class HighlightOpenFiles extends obsidian.Plugin {
 		// await this.loadSettings();
 		const workspace = this.app.workspace;
 		const addMarker = (el,leaf_id) => {
-			let marker_container = `<div class="mark_open_files_container"></div>`;
-			let marker = `<span class="mark_open_files" data-leaf_id="${leaf_id}">•</span>`;
+			let marker_container = document.createElement('div');
+				marker_container.classList.add('mark_open_files_container');
+			let marker = document.createElement('span');
+				marker.classList.add('mark_open_files');
+				marker.dataset.leaf_id = leaf_id;
+				marker.textContent = '•';
 			if ( !el.querySelector('.mark_open_files_container') ) {
-				el.insertAdjacentHTML('afterbegin',marker_container);
+				el.insertAdjacentElement('afterbegin',marker_container);									// add marker container if needed
 			}
-			el.querySelector('.mark_open_files_container').insertAdjacentHTML('beforeend',marker);
+			el.querySelector('.mark_open_files_container').insertAdjacentElement('beforeend',marker);		// add marker
 		}
 		const awaitFileExplorer = () => {
 			return new Promise( (resolve) => {
@@ -31,14 +35,16 @@ class HighlightOpenFiles extends obsidian.Plugin {
 					return [open_leaves,open_leaves_ids];
 				};
 				let open_items = getOpenItems(), open_leaves = open_items[0], open_leaves_ids = open_items[1], open_leaves_paths = open_items[2];
-				let getMarkers = () => { return file_explorer_tree.containerEl.querySelectorAll('.mark_open_files') };
+				let getMarkers = () => { return file_explorer_tree?.containerEl?.querySelectorAll('.mark_open_files') };
+				let markers = getMarkers();
+				if ( !markers ) { return }
 				open_leaves.forEach( open_leaf => {
 					let tree_item = file_explorer_tree?.containerEl?.querySelector('.tree-item-self[data-path="'+open_leaf?.view?.file?.path+'"]') || null;	// find tree item by leaf file path
 					if ( tree_item !== null && !tree_item.querySelector('.mark_open_files[data-leaf_id="'+open_leaf.id+'"]') ) {
 						addMarker(tree_item,open_leaf.id );												// if no matching leaf marker, add leaf marker
 					}
 				});
-				getMarkers().forEach( marker => {
+				markers.forEach( marker => {
 					if ( !open_leaves_ids.includes(marker.dataset.leaf_id) 																	// if no open leaf id matches the marker id
 					|| workspace.getLeafById(marker.dataset.leaf_id).view.file.path !== marker.closest('.tree-item-self').dataset.path ) { 	// reused leaves keep the same id, so check path instead
 						marker.remove();																									// remove the marker
@@ -50,6 +56,9 @@ class HighlightOpenFiles extends obsidian.Plugin {
 		this.registerDomEvent(document,'mousedown', (e) => {
 			if ( /mark_open_files/.test(e.target.className) ) {
 				e.stopPropagation(); e.stopImmediatePropagation; e.preventDefault();
+				e.target.addEventListener('mouseup', function(e) { 
+					e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
+				});
 				e.target.addEventListener('click', function(e) { 
 					e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
 					workspace.setActiveLeaf(workspace.getLeafById(e.srcElement.dataset.leaf_id),{focus:true});
