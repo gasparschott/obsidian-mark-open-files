@@ -1,9 +1,6 @@
 'use strict';
 
 let obsidian = require('obsidian');
-let DEFAULT_SETTINGS = {
-	'keyboard_shortcuts': []
-};
 
 class HighlightOpenFiles extends obsidian.Plugin {
     async onload() {
@@ -27,6 +24,7 @@ class HighlightOpenFiles extends obsidian.Plugin {
 			})
 		}
 		const highlight_open_files = obsidian.debounce( async () => {
+			if ( workspace.app.internalPlugins.getPluginById('file-explorer').enabled === false ) { return; }
 			awaitFileExplorer().then( () => {
  				const file_explorer_tree = workspace.getLeavesOfType('file-explorer')[0].view.tree;
 				const getOpenItems = () => { 
@@ -52,7 +50,10 @@ class HighlightOpenFiles extends obsidian.Plugin {
 				});
 			});
 		},100);
-		workspace.onLayoutReady( () => { sleep(100).then( () => { highlight_open_files(); }); });												// initialize
+		workspace.onLayoutReady( () => { sleep(100).then( () => { 
+			if ( workspace.app.internalPlugins.getPluginById('file-explorer').enabled === false ) { alert('The plugin “Mark Open Files” requires the core “Files” plugin to be enabled.'); }
+			highlight_open_files(); }); 
+		});												// initialize
 		this.registerDomEvent(document,'mousedown', (e) => {
 			if ( /mark_open_files/.test(e.target.className) ) {
 				e.stopPropagation(); e.stopImmediatePropagation; e.preventDefault();
