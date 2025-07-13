@@ -47,7 +47,11 @@ const markOpenFiles = (workspace,position,bool) => {
 			if ( !open_leaves_ids.includes(marker.dataset.leaf_id) 																	// if no open leaf id matches the marker id
 			|| workspace.getLeafById(marker?.dataset?.leaf_id).view.file.path !== marker.closest('.tree-item-self')?.dataset?.path ) { 	// reused leaves keep the same id, so check path instead
 				marker.closest('.has_open_file_marker')?.classList?.remove('has_open_file_marker');
-				marker.remove();																									// remove the marker
+				if ( marker.closest('.mark_open_files_container').querySelectorAll('.mark_open_files').length === 1 ) { 
+					marker.closest('.mark_open_files_container').remove();
+				} else {
+					marker.remove();																									// remove the marker
+				}
 			}					
 		});
 	});
