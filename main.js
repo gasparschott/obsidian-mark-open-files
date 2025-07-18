@@ -10,7 +10,8 @@ const awaitFileExplorer = (workspace) => {
 	})
 }
 const addMarker = (el,leaf_id,position) => {
-		el.parentElement.classList.add('has_open_file_marker');
+	let tree_item = el.closest('.tree-item.nav-file');
+		tree_item.classList.add('has_open_file_marker');
 	let marker_container = document.createElement('div');
 		marker_container.classList.add('mark_open_files_container');
 		marker_container.classList.add('marker_position_'+position);
@@ -18,11 +19,10 @@ const addMarker = (el,leaf_id,position) => {
 		marker.classList.add('mark_open_files');
 		marker.dataset.leaf_id = leaf_id;
 		marker.textContent = '•';
-	let marker_position = ( position === 'before' ? 'afterbegin' : 'beforeend' );
-	if ( !el.querySelector('.mark_open_files_container') ) {
-		el.insertAdjacentElement(marker_position,marker_container);									// add marker container if needed
+	if ( !tree_item.querySelector('.mark_open_files_container') ) {
+		el.insertAdjacentElement('afterbegin',marker_container);												// add marker container if needed
 	}
-	el.querySelector('.mark_open_files_container').insertAdjacentElement('beforeend',marker);		// add marker
+	tree_item.querySelector('.mark_open_files_container').insertAdjacentElement('beforeend',marker);			// find marker container and insert marker
 }
 const markOpenFiles = (workspace,position,bool) => {
 	if ( workspace.app.internalPlugins.getPluginById('file-explorer').enabled === false ) { return; }
@@ -36,35 +36,36 @@ const markOpenFiles = (workspace,position,bool) => {
 		let open_items = getOpenItems(), open_leaves = open_items[0], open_leaves_ids = open_items[1], open_leaves_paths = open_items[2];
 		let getMarkers = () => { return file_explorer_tree?.containerEl?.querySelectorAll('.mark_open_files') };									// get marked file explorer items
 		let markers = getMarkers();
-		if ( !markers ) { return } else if ( bool === true ) { markers.forEach( marker => marker.closest('.mark_open_files_container').remove() ) }
+		if ( !markers ) { return }
+		if ( bool === true ) { markers.forEach( marker => marker.closest('.mark_open_files_container').remove() ) }									// remove markers if position changed in settings
 		open_leaves.forEach( open_leaf => {
-			let tree_item = file_explorer_tree?.containerEl?.querySelector('.tree-item-self[data-path="'+open_leaf?.view?.file?.path+'"]') || null;	// find tree item by leaf file path
-			if ( tree_item !== null && !tree_item.querySelector('.mark_open_files[data-leaf_id="'+open_leaf.id+'"]') ) {
-				addMarker((position === 'before' ? tree_item : tree_item.closest('.tree-item-self')),open_leaf.id,position );						// if no matching leaf marker, add leaf marker
+			let tree_item_self = file_explorer_tree?.containerEl?.querySelector('.tree-item-self[data-path="'+open_leaf?.view?.file?.path+'"]') || null;	// find tree item by leaf file path
+			if ( tree_item_self !== null && !tree_item_self.querySelector('.mark_open_files[data-leaf_id="'+open_leaf.id+'"]') ) {
+				addMarker(tree_item_self,open_leaf.id,position );				// if no matching leaf marker, add leaf marker
 			}
 		});
-		markers.forEach( marker => {
-			if ( !open_leaves_ids.includes(marker.dataset.leaf_id) 																	// if no open leaf id matches the marker id
+		getMarkers().forEach( marker => {
+			if ( !open_leaves_ids.includes(marker.dataset.leaf_id) 																		// if no open leaf id matches the marker id
 			|| workspace.getLeafById(marker?.dataset?.leaf_id).view.file.path !== marker.closest('.tree-item-self')?.dataset?.path ) { 	// reused leaves keep the same id, so check path instead
-				if ( marker.closest('.mark_open_files_container').querySelectorAll('.mark_open_files').length === 1 ) { 
+				if ( marker.closest('.mark_open_files_container').querySelectorAll('.mark_open_files').length === 1 ) {					// cleanup
 					marker.closest('.has_open_file_marker').classList.remove('has_open_file_marker');
 					marker.closest('.mark_open_files_container').remove();
 				} else {
 					marker.remove();																									// remove the marker
 				}
-			}					
+			}
 		});
 	});
 }
-class HighlightOpenFiles extends obsidian.Plugin {
+class MarkOpenFiles extends obsidian.Plugin {
     async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new MarkOpenFilesSettings(this.app, this));
-		const position = this.settings.marker_position;
+		const getPosition = () => { return this.settings.marker_position; }
 		const workspace = this.app.workspace;
 		workspace.onLayoutReady( () => { sleep(100).then( () => { 
 			if ( workspace.app.internalPlugins.getPluginById('file-explorer').enabled === false ) { alert('The plugin “Mark Open Files” requires the core “Files” plugin to be enabled.'); }
-			markOpenFiles(workspace,position); }); 
+			markOpenFiles(workspace,getPosition()); }); 
 		});												// initialize
 		this.registerDomEvent(document,'mousedown', (e) => {
 			if ( /mark_open_files/.test(e.target.className) ) {
@@ -81,12 +82,12 @@ class HighlightOpenFiles extends obsidian.Plugin {
 		});
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', () => {
-				markOpenFiles(workspace,position);
+				markOpenFiles(workspace,getPosition());
 			})
 		);
 		this.registerEvent(
 			this.app.workspace.on('layout-change', () => {
-				markOpenFiles(workspace,position);
+				markOpenFiles(workspace,getPosition());
 			})
 		);
 	} 
@@ -115,11 +116,13 @@ let MarkOpenFilesSettings = class extends obsidian.PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
         containerEl.createEl("h1", {}, (el) => {el.innerHTML = 'Mark Open Files'; });
-		new obsidian.Setting(containerEl).setName('Marker position').setDesc('Place marker before or after file name.')
+		new obsidian.Setting(containerEl).setName('Marker position').setDesc('Choose where to the marker should appear.')
 			.addDropdown((dropDown) => {
-				dropDown.addOption("before", "Before");
-				dropDown.addOption("after", "After");
-				dropDown.setValue( ( this.plugin.settings.marker_position === undefined || this.plugin.settings.marker_position === 'before' ? 'before' : 'after' ) )
+				dropDown.addOption("left", "Align left");
+				dropDown.addOption("before", "Before name");
+				dropDown.addOption("after", "After name");
+				dropDown.addOption("right", "Align right");
+				dropDown.setValue( ( this.plugin.settings.marker_position === undefined ? 'before' : this.plugin.settings.marker_position ) )
 				dropDown.onChange(async (value) => {
 					this.plugin.settings.marker_position = value;
 					await this.plugin.saveSettings();
@@ -128,4 +131,4 @@ let MarkOpenFilesSettings = class extends obsidian.PluginSettingTab {
 		});
 	}
 }
-module.exports = HighlightOpenFiles;
+module.exports = MarkOpenFiles;

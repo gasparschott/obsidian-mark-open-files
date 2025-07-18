@@ -1,7 +1,3 @@
-.mark_open_files_container
-{
-	display:flex;
-}
 .mark_open_files
 {
 	opacity:66%;
@@ -16,12 +12,22 @@
 	margin-right:2px;
 	padding:0 2px;
 }
+.marker_position_left
+{
+	position:absolute;
+	left:0;
+}
 .marker_position_after
 {
-	margin-left:auto;
-}
-.marker_position_after .mark_open_files
-{
-	margin-left:2px;
+	order:10;
+	padding-left:4px;
 	margin-right:0;
+	align-self:flex-end;
+}
+.marker_position_right
+{
+	order:10;
+	margin-left:auto;
+	padding-left:4px;
+	align-self:flex-end;
 }
