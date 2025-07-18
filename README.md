@@ -6,7 +6,7 @@ This is a ~~simple~~ slightly-more-than-simple plugin for Obsidian that adds a m
 
 • Clicking a marker will make the corresponding leaf active.  
 
-• The marker can be positioned after (default) or before the file name via the Settings.
+• The marker can be positioned before or after (default) the file name, or aligned to the left or right side of the file explorer via the Settings.
 
 <img src="assets/mark-open-files.gif" style="width:672px;" alt="Basic usage example" />
 
