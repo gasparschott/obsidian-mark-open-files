@@ -116,7 +116,7 @@ let MarkOpenFilesSettings = class extends obsidian.PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
         containerEl.createEl("h1", {}, (el) => {el.innerHTML = 'Mark Open Files'; });
-		new obsidian.Setting(containerEl).setName('Marker position').setDesc('Choose where to the marker should appear.')
+		new obsidian.Setting(containerEl).setName('Marker position').setDesc('Choose where to the marker should appear. (Note: “Align left” is not recommended if you have more than one instance of a particular file open at a time.)')
 			.addDropdown((dropDown) => {
 				dropDown.addOption("left", "Align left");
 				dropDown.addOption("before", "Before name");
