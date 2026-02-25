@@ -27,7 +27,7 @@ const addMarker = (el,leaf_id,position) => {
 const markOpenFiles = (workspace,position,bool) => {
 	if ( workspace.app.internalPlugins.getPluginById('file-explorer').enabled === false ) { return; }
 	awaitFileExplorer(workspace).then( () => {
-		const file_explorer_tree = workspace.getLeavesOfType('file-explorer')[0].view.tree;
+		const file_explorer_tree = workspace.getLeavesOfType('file-explorer')[0]?.view?.tree;
 		const getOpenItems = () => { 
 			let open_leaves = [], open_leaves_ids = [];
 			workspace.iterateRootLeaves( leaf => { leaf.loadIfDeferred(); open_leaves.push(leaf); open_leaves_ids.push(leaf.id); } );
@@ -46,7 +46,7 @@ const markOpenFiles = (workspace,position,bool) => {
 		});
 		getMarkers().forEach( marker => {
 			if ( !open_leaves_ids.includes(marker.dataset.leaf_id) 																		// if no open leaf id matches the marker id
-			|| workspace.getLeafById(marker?.dataset?.leaf_id).view.file.path !== marker.closest('.tree-item-self')?.dataset?.path ) { 	// reused leaves keep the same id, so check path instead
+			|| workspace.getLeafById(marker?.dataset?.leaf_id)?.view?.file?.path !== marker.closest('.tree-item-self')?.dataset?.path ) { 	// reused leaves keep the same id, so check path instead
 				if ( marker.closest('.mark_open_files_container').querySelectorAll('.mark_open_files').length === 1 ) {					// cleanup
 					marker.closest('.has_open_file_marker').classList.remove('has_open_file_marker');
 					marker.closest('.mark_open_files_container').remove();
@@ -66,28 +66,33 @@ class MarkOpenFiles extends obsidian.Plugin {
 		workspace.onLayoutReady( () => { sleep(100).then( () => { 
 			if ( workspace.app.internalPlugins.getPluginById('file-explorer').enabled === false ) { alert('The plugin “Mark Open Files” requires the core “Files” plugin to be enabled.'); }
 			markOpenFiles(workspace,getPosition()); }); 
-		});												// initialize
+		});												// initialize tree-item-icon collapse-icon is-collapsed
 		this.registerDomEvent(document,'mousedown', (e) => {
-			if ( /mark_open_files/.test(e.target.className) ) {
-				e.stopPropagation(); e.stopImmediatePropagation; e.preventDefault();
-				e.target.addEventListener('mouseup', function(e) { 
-					e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
-				});
-				e.target.addEventListener('click', function(e) { 
-					e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
-					workspace.setActiveLeaf(workspace.getLeafById(e.srcElement.dataset.leaf_id),{focus:true});
-					workspace.getLeafById(e.srcElement.dataset.leaf_id).tabHeaderEl.click();												// trigger Continuous Mode plugin scroll into view
-				});
+			switch(true) {
+				case ( /mark_open_files/.test(e.target.className) ):
+					e.stopPropagation(); e.stopImmediatePropagation; e.preventDefault();
+					e.target.addEventListener('mouseup', function(e) { 
+						e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
+					});
+					e.target.addEventListener('click', function(e) { 
+						e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
+						workspace.setActiveLeaf(workspace.getLeafById(e.srcElement.dataset.leaf_id),{focus:true});
+						workspace.getLeafById(e.srcElement.dataset.leaf_id).tabHeaderEl.click();												// trigger Continuous Mode plugin scroll into view
+					});
+					break;
 			}
+		});
+		this.registerDomEvent(document,'click', (e) => {
+			if ( e.target.closest('.tree-item-icon.collapse-icon') !== null ) { sleep(0).then( markOpenFiles(workspace,getPosition()) ); }		// ensure markers are updated when a folder collapse state changes
 		});
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', () => {
-				markOpenFiles(workspace,getPosition());
+				sleep(0).then( markOpenFiles(workspace,getPosition()) );
 			})
 		);
 		this.registerEvent(
 			this.app.workspace.on('layout-change', () => {
-				markOpenFiles(workspace,getPosition());
+				sleep(0).then( markOpenFiles(workspace,getPosition()) );
 			})
 		);
 	} 
